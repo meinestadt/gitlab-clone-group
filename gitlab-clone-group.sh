@@ -81,7 +81,6 @@ fi
 
 log_clone()  { printf "${C_GREEN}[clone]${C_RESET}  %s\n"  "$1"; }
 log_pull()   { printf "${C_CYAN}[pull]${C_RESET}   %s\n"  "$1"; }
-log_skip()   { printf "${C_DIM}[skip]${C_RESET}   %s\n"   "$1"; }
 log_moved()  { printf "${C_CYAN}[moved]${C_RESET}  %s – %s\n" "$1" "$2"; }
 log_keep()   { printf "${C_YELLOW}[keep]${C_RESET}   %s – %s\n" "$1" "$2"; }
 log_gone()   { printf "${C_YELLOW}[gone]${C_RESET}   %s – %s\n" "$1" "$2"; }
@@ -417,7 +416,7 @@ while IFS=$'\t' read -r action pid path rel url; do
     case "$action" in
         update|moved)
             if ! $UPDATE_EXISTING; then
-                log_skip "$(relpath "$path")"
+                # Counted only: one line per repo would drown the interesting ones
                 inc skipped
                 continue
             fi
