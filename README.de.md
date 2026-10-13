@@ -89,7 +89,7 @@ Existiert das Zielverzeichnis nicht, fragt das Skript vor dem Anlegen nach.
 | Flag | Standard | Beschreibung |
 |------|----------|--------------|
 | `-a`, `--archived` | aus | Archivierte Projekte ebenfalls klonen |
-| `-n`, `--no-update` | aus | Kein `git pull` für bereits geklonte Repositories |
+| `-n`, `--no-update` | aus | Kein `git pull` für bereits geklonte Repositories (nur in der Zusammenfassung gezählt, nicht einzeln aufgelistet) |
 | `-d`, `--delete-archived` | aus | Lokale Kopien von auf GitLab archivierten Projekten nach `PATH/.trash` verschieben (nur wenn sauber, siehe unten). Nicht mit `-a` kombinierbar |
 | `-h`, `--help` | | Hilfe anzeigen |
 
@@ -192,7 +192,6 @@ Das Skript nutzt farbige Logzeilen (automatisch abgeschaltet, wenn die Ausgabe u
 |-----|-------|-----------|
 | `[clone]` | Grün | Repository neu geklont |
 | `[pull]` | Cyan | Bestehendes Repository erfolgreich aktualisiert |
-| `[skip]` | Gedimmt | Repository bereits vorhanden, Update übersprungen (`--no-update`) |
 | `[moved]` | Cyan | Projekt auf GitLab umbenannt oder verschoben – `origin` aktualisiert, Ordner bleibt an seinem Platz |
 | `[keep]` | Gelb | Archiviertes Projekt nicht in den Papierkorb verschoben (hat lokale Arbeit) oder doppelter Klon |
 | `[gone]` | Gelb | Lokaler Klon, dessen Projekt nicht mehr in der Gruppe ist (verschoben oder gelöscht) |

@@ -89,7 +89,7 @@ If the target directory does not exist, the script will prompt before creating i
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-a`, `--archived` | off | Also clone archived projects |
-| `-n`, `--no-update` | off | Skip `git pull` on already-cloned repositories |
+| `-n`, `--no-update` | off | Skip `git pull` on already-cloned repositories (only counted in the summary, not listed) |
 | `-d`, `--delete-archived` | off | Move local copies of projects archived on GitLab to `PATH/.trash` (only if clean, see below). Cannot be combined with `-a` |
 | `-h`, `--help` | | Show usage information |
 
@@ -192,7 +192,6 @@ The script uses color-coded log lines (suppressed automatically when piped or re
 |-----|-------|---------|
 | `[clone]` | Green | Repository newly cloned |
 | `[pull]` | Cyan | Existing repository successfully updated |
-| `[skip]` | Dim | Repository already present, update skipped (`--no-update`) |
 | `[moved]` | Cyan | Project renamed or moved on GitLab — `origin` updated, folder left in place |
 | `[keep]` | Yellow | Archived project not moved to trash (has local work), or a duplicate clone |
 | `[gone]` | Yellow | Local clone whose project is no longer in the group (moved out or deleted) |
