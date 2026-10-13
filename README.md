@@ -1,6 +1,13 @@
 # gitlab-clone-group
 
-A Bash script that clones all projects from a GitLab group into a local directory, preserving the full namespace structure. Designed for teams that need a reliable, repeatable way to mirror or synchronize an entire GitLab group — including subgroups — to a local machine.
+English | [Deutsch](README.de.md)
+
+Two Bash scripts that keep local git repositories in sync with their remotes without touching local work:
+
+- **`gitlab-clone-group.sh`** clones all projects from a GitLab group into a local directory, preserving the full namespace structure, and keeps existing clones in line with GitLab (renamed, moved, archived and removed projects). Designed for teams that need a reliable, repeatable way to mirror or synchronize an entire GitLab group — including subgroups — to a local machine.
+- **`update-repos.sh`** updates every git repository under a directory, from any host (GitLab, GitHub, others): it fetches all remotes and fast-forwards local branches.
+
+Use them together for a full sync: the first finds and clones new projects, the second updates everything (see [Full sync](#full-sync)).
 
 ## Features
 
@@ -51,11 +58,12 @@ glab auth login --hostname git.example.com
 # Clone this repository
 git clone https://github.com/meinestadt/gitlab-clone-group.git
 
-# Make the script executable
-chmod +x gitlab-clone-group/gitlab-clone-group.sh
+# Make the scripts executable
+chmod +x gitlab-clone-group/gitlab-clone-group.sh gitlab-clone-group/update-repos.sh
 
 # Optionally install globally
 cp gitlab-clone-group/gitlab-clone-group.sh /usr/local/bin/gitlab-clone-group
+cp gitlab-clone-group/update-repos.sh /usr/local/bin/update-repos
 ```
 
 ## Usage
@@ -140,6 +148,40 @@ gitlab-clone-group.sh \
 
 ```cron
 0 6 * * * GITLAB_CLONE_HOST=git.example.com GITLAB_CLONE_GROUP_ID=1879 GITLAB_CLONE_TARGET_DIR=/srv/mirror /usr/local/bin/gitlab-clone-group >> /var/log/gitlab-clone-group.log 2>&1
+```
+
+## Updating all repositories (`update-repos.sh`)
+
+```
+update-repos.sh [DIRECTORY] [MAX_PARALLEL]
+```
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `DIRECTORY` | current directory | Searched recursively for git repositories |
+| `MAX_PARALLEL` | `8` | Maximum concurrent repositories |
+
+`update-repos.sh` needs only `git` and works on every repository it finds, wherever it was cloned from. Folders named `node_modules`, `.venv`, `vendor`, `target` and `.trash` are skipped while searching. For each repository it:
+
+1. Runs `git fetch --all --prune`, which updates the remote-tracking branches of every remote and never touches the working tree.
+2. Fast-forwards every other local branch that is strictly behind its upstream. Diverged branches and branches checked out in another worktree are left alone.
+3. Fast-forwards the checked-out branch with `git merge --ff-only @{u}`. Git refuses if a change would overwrite uncommitted or untracked files, or if the branch has diverged.
+
+| Status | Meaning |
+|--------|---------|
+| `OK` | Fetched and fast-forwarded (or already up to date); `+N other branch(es)` counts extra branches moved |
+| `SKIP` | No remote, detached HEAD, or the current branch has no upstream (other branches are still fetched and fast-forwarded) |
+| `FAIL` | Fetch or fast-forward failed; git's reason is listed in the summary |
+
+Nothing is ever merged, rebased, reset or deleted, so local commits, uncommitted changes and untracked files stay as they are.
+
+## Full sync
+
+Let `gitlab-clone-group.sh` find and clone new projects (and follow moved ones), then let `update-repos.sh` update everything, including repositories from other hosts:
+
+```bash
+gitlab-clone-group.sh --host git.example.com --group mygroup --dir ~/Projects/mygroup --no-update \
+  && update-repos.sh ~/Projects
 ```
 
 ## Output
@@ -251,13 +293,17 @@ The GitLab Projects API is paginated at 100 results per page. The script iterate
 
 ## Testing
 
-`test/run-tests.sh` runs the script offline against local bare repositories and a fake `glab`, covering cloning, matching, moves, gone and duplicate clones, and the archive safety checks:
+Both test suites run offline against local bare repositories:
+
+- `test/run-tests.sh` tests `gitlab-clone-group.sh` with a fake `glab`: cloning, matching, moves, gone and duplicate clones, and the archive safety checks.
+- `test/update-repos.test.sh` tests `update-repos.sh`: fast-forwarding, kept local changes, worktree and diverged branches, multiple remotes and skip reasons.
 
 ```bash
 test/run-tests.sh
+test/update-repos.test.sh
 ```
 
 ## License
 
 MIT License — Copyright (c) 2026 meinestadt.de GmbH, Author: Robert Wachtel.
-See the [LICENSE](LICENSE) header inside the script for the full license text.
+See the license header inside `gitlab-clone-group.sh` for the full license text.
